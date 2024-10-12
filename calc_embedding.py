@@ -1,63 +1,79 @@
-# 通过bge-m3把一段话变为embedding
+"""
+该脚本通过bge-m3将段落转换为embedding，并将结果存储到Qdrant数据库中。
+"""
+
 from FlagEmbedding import BGEM3FlagModel
-
-model = BGEM3FlagModel('../bge-m3',  
-                       use_fp16=True) # Setting use_fp16 to True speeds up computation with a slight performance degradation
-
-
-def calc_embedding(sentences_1):
-    sentences_1 = ["What is BGE M3?", "Defination of BM25"]
-
-    embeddings_1 = model.encode(sentences_1, 
-                            batch_size=12, 
-                            max_length=2000, # If you don't need such a long length, you can set a smaller value to speed up the encoding process.
-                            )['dense_vecs']
-    
-    embeddings_1 = embeddings_1.tolist()
-    print(embeddings_1)
-    return embeddings_1
-
-# 读取文件中的内容切分为段落（按照\n来切分），然后12句一组去计算embedding，最后返回每句话和对应的embedding的一个dict，存储到下面的数据库
-
-
-
 from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
 
+# 初始化BGE M3模型
+model = BGEM3FlagModel('../bge-m3', use_fp16=True)
+
+# 初始化Qdrant客户端
 client = QdrantClient(url="http://localhost:6333")
 
-from qdrant_client.models import Distance, VectorParams
-
+# 创建集合以存储embedding
 client.create_collection(
     collection_name="test_collection",
     vectors_config=VectorParams(size=4, distance=Distance.DOT),
 )
 
-from qdrant_client.models import PointStruct
+def calc_embedding(file_path: str) -> dict:
+    """
+    从指定文件读取内容，按段落切分为句子，每12句计算一次embedding并存储到Qdrant数据库中。
 
-operation_info = client.upsert(
-    collection_name="test_collection",
-    wait=True,
-    points=[
-        PointStruct(id=1, vector=[0.05, 0.61, 0.76, 0.74], payload={"city": "Berlin"}),
-        PointStruct(id=2, vector=[0.19, 0.81, 0.75, 0.11], payload={"city": "London"}),
-        PointStruct(id=3, vector=[0.36, 0.55, 0.47, 0.94], payload={"city": "Moscow"}),
-        PointStruct(id=4, vector=[0.18, 0.01, 0.85, 0.80], payload={"city": "New York"}),
-        PointStruct(id=5, vector=[0.24, 0.18, 0.22, 0.44], payload={"city": "Beijing"}),
-        PointStruct(id=6, vector=[0.35, 0.08, 0.11, 0.44], payload={"city": "Mumbai"}),
-    ],
-)
+    参数:
+        file_path (str): 文件路径
 
-print(operation_info)
+    返回:
+        dict: 每句话和对应embedding的字典
+    """
+    try:
+        # 读取文件内容并按\n切分为段落
+        with open(file_path, 'r', encoding='utf-8') as file:
+            sentences = file.read().splitlines()
+        
+        # 存储结果的字典
+        sentence_embedding_dict = {}
+        
+        # 打印读取的句子数量
+        print(f"共读取到句子数量: {len(sentences)}")
 
-search_result = client.query_points(
-    collection_name="test_collection",
-    query=[0.2, 0.1, 0.9, 0.7],
-    with_payload=False,
-    limit=3
-).points
+        # 按12句一组进行embedding计算
+        for i in range(0, len(sentences), 12):
+            batch_sentences = sentences[i:i + 12]
+            print(f"处理第 {i//12 + 1} 组句子: {batch_sentences}")
 
-print(search_result)
+            # 计算embedding
+            embeddings = model.encode(
+                batch_sentences,
+                batch_size=12,
+                max_length=2000,
+            )['dense_vecs']
+            
+            # 打印每个句子及其对应的embedding
+            for sentence, embedding in zip(batch_sentences, embeddings.tolist()):
+                sentence_embedding_dict[sentence] = embedding
+                print(f"句子: \"{sentence}\" 的 embedding: {embedding}")
 
+                # 将embedding插入到Qdrant数据库
+                point = PointStruct(id=len(sentence_embedding_dict), vector=embedding, payload={"sentence": sentence})
+                operation_info = client.upsert(collection_name="test_collection", points=[point])
+                
+                # 打印插入数据库的状态信息
+                print(f"插入到Qdrant数据库的状态: {operation_info}")
 
+        return sentence_embedding_dict
+    
+    except FileNotFoundError as fnf_error:
+        print(f"文件未找到: {fnf_error}")
+        return {}
+    except Exception as exc:
+        print(f"出现错误: {exc}")
+        return {}
 
-
+# 使用示例
+if __name__ == "__main__":
+    file_path = "你的文件路径.txt"  # 替换为你的文件路径
+    embeddings = calc_embedding(file_path)
+    print(f"最终结果: {embeddings}")  # 打印每句话及其对应的embedding
