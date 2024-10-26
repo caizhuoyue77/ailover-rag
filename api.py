@@ -6,11 +6,6 @@ from rag import BGEM3FlagModel, calculate_embeddings, search_blocks
 app = FastAPI()
 
 
-# Pydantic 模型用于定义请求结构
-class SaveRequest(BaseModel):
-    file_path: str
-
-
 class SearchRequest(BaseModel):
     query_text: str
     limit: int = 3

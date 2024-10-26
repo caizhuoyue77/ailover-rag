@@ -14,6 +14,14 @@ docker跑qdrant数据库
 - natapp 内网穿透的软件
 
 ## 启动方式
+
+docker启动qdrant
+```shell
+docker run -p 6333:6333 -p 6334:6334 \
+    -v $(pwd)/qdrant_storage:/qdrant/storage:z \
+    qdrant/qdrant
+```
+
 nohup ./natapp [你对应的key] >> api-nohup.out
 注意配置端口和natapp的端口一样
 
