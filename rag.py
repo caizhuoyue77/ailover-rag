@@ -3,19 +3,32 @@
 """
 import uuid
 from FlagEmbedding import BGEM3FlagModel
+from FlagEmbedding import FlagModel
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 
-# 初始化BGE M3模型
-model = BGEM3FlagModel('../bge-m3', use_fp16=True)
+# 初始化bge-small-zh-v1.5模型
+model = FlagModel('../bge-small-zh-v1.5', 
+                  query_instruction_for_retrieval="为这个句子生成表示以用于检索相关文章：",
+                  use_fp16=True) # Setting use_fp16 to True speeds up computation with a slight performance degradation
 
-COLLECTION_NAME = "ailover_test_collection_shenkong_241026_1"
+# 初始化BGE M3模型
+# model = BGEM3FlagModel('../bge-m3', use_fp16=True)
+
+COLLECTION_NAME = "ailover_test_collection_guangyefufei_241026_1"
+
+COLLECTION_MAP = {
+    "shenkong": "ailover_test_collection_shenkong_241026_4",
+    "guangye": "ailover_test_collection_guangye_241026_2",
+    "guangyefufei": "ailover_test_collection_guangyefufei_241026_1"
+}
+
 client = QdrantClient(url="http://localhost:6333")
 
 # 创建集合以存储embedding
 client.create_collection(
     collection_name=COLLECTION_NAME,
-    vectors_config=VectorParams(size=1024, distance=Distance.DOT),
+    vectors_config=VectorParams(size=512, distance=Distance.DOT),
 )
 
 def read_file(file_path: str) -> list:
@@ -50,9 +63,8 @@ def calculate_embeddings(sentences: list) -> list:
     try:
         embeddings = model.encode(
             sentences,
-            batch_size=len(sentences),
-            max_length=2000,
-        )['dense_vecs']
+            batch_size=len(sentences)
+        )
         return embeddings.tolist()
     except Exception as exc:
         print(f"计算embedding时出现错误: {exc}")
@@ -92,7 +104,7 @@ def save_content_to_database(file_path: str) -> dict:
     return paragraph_embedding_dict
 
 
-def search_blocks(query_text: str, limit: int):
+def search_blocks(query_text: str, bot_type: str, limit: int):
     
     query_embedding = calculate_embeddings([query_text])[0]
 
@@ -119,6 +131,6 @@ def search_blocks(query_text: str, limit: int):
 
 # 使用示例
 if __name__ == "__main__":
-    file_path = "./data/ailover-shenkong-fufei.txt"  # 替换为你的文件路径
+    file_path = "/data/czy/ailover-rag/data/光夜付费bot指南_split.txt"  # 替换为你的文件路径
     embeddings = save_content_to_database(file_path)
     # print(f"最终结果: {embeddings}")

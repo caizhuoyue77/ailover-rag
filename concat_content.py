@@ -83,7 +83,7 @@ def extract_markdown_content_and_calculate_length(root_folder, output_file, spli
 
 
 # 使用示例
-root_folder = 'data/flowus_dir/猎人小姐请用深空bot指南！+fc8ce11a-3078-4489-a258-24011ad1701f'  # 替换为你的根文件夹路径
-output_file = 'data/猎人小姐深空bot指南.txt'  # 输出文件名
-split_file = 'data/猎人小姐深空bot指南_split.txt'  # 分片输出文件名
+root_folder = '/data/czy/ailover-rag/data/flowus_dir/设计师小姐请用光夜bot指南！+79e67f6c-7879-4658-9cb1-28ae04e2ec41'  # 替换为你的根文件夹路径
+output_file = 'data/光夜付费bot指南.txt'  # 输出文件名
+split_file = 'data/光夜付费bot指南_split.txt'  # 分片输出文件名
 extract_markdown_content_and_calculate_length(root_folder, output_file, split_file)
