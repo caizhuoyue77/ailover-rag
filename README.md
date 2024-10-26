@@ -14,5 +14,8 @@ docker跑qdrant数据库
 - natapp 内网穿透的软件
 
 ## 启动方式
-./natapp [你对应的key]
+nohup ./natapp [你对应的key] >> api-nohup.out
 注意配置端口和natapp的端口一样
+
+请求方式（这个natapp的链接可能会变）
+curl -X POST "http://btu57v.natappfree.cc/search" -H "Content-Type: application/json" -d '{"query_text": " 如何切換模型？", "limit": 1}'

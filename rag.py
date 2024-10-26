@@ -12,7 +12,7 @@ model = BGEM3FlagModel('../bge-m3', use_fp16=True)
 COLLECTION_NAME = "ailover_test_collection_shenkong_241026_1"
 client = QdrantClient(url="http://localhost:6333")
 
-创建集合以存储embedding
+# 创建集合以存储embedding
 client.create_collection(
     collection_name=COLLECTION_NAME,
     vectors_config=VectorParams(size=1024, distance=Distance.DOT),
@@ -119,6 +119,6 @@ def search_blocks(query_text: str, limit: int):
 
 # 使用示例
 if __name__ == "__main__":
-    file_path = "./data/story.txt"  # 替换为你的文件路径
+    file_path = "./data/ailover-shenkong-fufei.txt"  # 替换为你的文件路径
     embeddings = save_content_to_database(file_path)
     # print(f"最终结果: {embeddings}")
