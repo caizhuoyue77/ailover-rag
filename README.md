@@ -24,18 +24,22 @@ docker run -p 6333:6333 -p 6334:6334 \
     qdrant/qdrant
 ```
 
+启动后端
+```shell
+uvicorn api:app --reload
+```
+
 nohup ./natapp [你对应的key] >> api-nohup.out
-注意配置端口和natapp的端口一样
+注意配置端口和natapp的端口一样(目前是8000端口)
+
 
 请求方式（这个natapp的链接可能会变）
-curl -X POST "http://btu57v.natappfree.cc/search" -H "Content-Type: application/json" -d '{"query_text": " 如何切換模型？", "limit": 1}'
+curl -X POST "http://ux6tsm.natappfree.cc/search" -H "Content-Type: application/json" -d '{"query_text": " 如何切換模型？", "limit": 1}'
 
 
 ## 服务器配置
 
 112服务器
-shenkong：ailover_test_collection_shenkong_241026_4
-guangye：ailover_test_collection_guangye_241026_2
-guangyefufei：ailover_test_collection_guangyefufei_241026_1
+所有的doc的仓库名：ailover_test_collection_1026_all_3
 
 113服务器
