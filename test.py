@@ -1,3 +1,4 @@
+""" 测试Qdrant向量数据库的代码 不用看 """
 from qdrant_client import QdrantClient
 
 client = QdrantClient(url="http://localhost:6333")

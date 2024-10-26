@@ -1,20 +1,29 @@
 import os
 import re
 
-def extract_markdown_content_and_calculate_length(root_folder, output_file):
+def split_markdown_content(content):
+    """根据 # 分片并返回分片列表"""
+    sections = re.split(r'\n(?=#)', content)  # 按行分割并查找以#开头的行
+    return [section.strip() for section in sections]
+
+def extract_markdown_content_and_calculate_length(root_folder, output_file, split_file):
     lengths = {}  # 用于存储每个文件的内容长度
 
     # 正则表达式模式，用于匹配Markdown图像语法和心形符号示例
     image_pattern = re.compile(r'!\[.*?\]\(.*?\)')  # 匹配Markdown图像
     heart_example_pattern = re.compile(r'❤示例')  # 匹配形如❤示例的字符串
+    
+    idx = 0
 
-    with open(output_file, 'w', encoding='utf-8') as outfile:
+    with open(output_file, 'w', encoding='utf-8') as outfile, open(split_file, 'w', encoding='utf-8') as split_outfile:
         # 遍历根文件夹及其所有子文件夹
         for dirpath, dirnames, filenames in os.walk(root_folder):
             for filename in filenames:
                 if filename.endswith('.md'):  # 检查文件扩展名
                     file_path = os.path.join(dirpath, filename)
                     with open(file_path, 'r', encoding='utf-8') as infile:
+                        # print(idx)
+                        # idx+=1
                         content = infile.read()  # 读取Markdown文件内容
                         # 清洗内容，删除图像引用和心形示例
                         cleaned_content = image_pattern.sub('', content)
@@ -23,36 +32,58 @@ def extract_markdown_content_and_calculate_length(root_folder, output_file):
                         # 删除多余空行
                         cleaned_content_lines = [line for line in cleaned_content.splitlines() if line.strip()]  # 删除所有空行
                         cleaned_content = '\n'.join(cleaned_content_lines).strip()  # 合并非空行
-
-                        file_length = len(cleaned_content)  # 获取清洗后的内容长度
-                        lengths[file_path] = file_length  # 记录内容长度
-
-                        # 处理文件名
-                        base_filename = filename.split('+')[0].strip()  # 分割并取第一个元素
-                        # 处理文件夹名
-                        base_foldername = os.path.basename(dirpath).split('+')[0].strip()  # 获取文件夹名并分割
-
-                        # 写入分隔符和文件名
-                        outfile.write("============\n")  # 分隔符
-                        outfile.write(f"# {base_foldername}/{base_filename}\n")  # 文件夹和文件名
-                        outfile.write(cleaned_content + '\n\n')  # 写入内容，并添加换行
                         
-                        # 打印每个文件的长度
-                        print(f"{file_path}: {file_length} 字符")
+                        
+                        # 根据标题进行分片
+                        if len(cleaned_content)> 200:
+                            print(f"{filename} 长度:{len(cleaned_content)}")
+                            sections = split_markdown_content(cleaned_content)
+                            print(len(sections))
+                        else:
+                            sections = [cleaned_content]
+                        
+                        # sections = split_markdown_content(cleaned_content)
+                            
+                        idx += len(sections)
+                            
+                        # 计算分片的长度
+                        for section in sections:
+                            file_length = len(section)  # 获取分片的内容长度
+                            lengths[file_path] = lengths.get(file_path, 0) + file_length  # 累加到总长度
+
+                            # 处理文件名
+                            base_filename = filename.split('+')[0].strip()  # 分割并取第一个元素
+                            # 处理文件夹名
+                            base_foldername = os.path.basename(dirpath).split('+')[0].strip()  # 获取文件夹名并分割
+
+                            # 写入分隔符和文件名
+                            outfile.write("============\n")  # 分隔符
+                            outfile.write(f"# {base_foldername}/{base_filename}\n")  # 文件夹和文件名
+                            outfile.write(section + '\n\n')  # 写入分片内容，并添加换行
+                            
+                            # 打印每个分片的长度
+                            # print(f"{file_path} - 分片长度: {file_length} 字符")
+                            
+                            # 将分片写入到 split.txt
+                            split_outfile.write(f"# {base_filename}\n")  # 文件夹和文件名
+                            split_outfile.write(section + '\n\n\n')  # 用两个空行隔开每个片
 
     # 计算长度信息
-    if lengths:
-        max_length = max(lengths.values())
-        min_length = min(lengths.values())
-        avg_length = sum(lengths.values()) / len(lengths)
+    # if lengths:
+    #     max_length = max(lengths.values())
+    #     min_length = min(lengths.values())
+    #     avg_length = sum(lengths.values()) / len(lengths)
         
-        print(f"\n最大长度: {max_length} 字符")
-        print(f"最小长度: {min_length} 字符")
-        print(f"平均长度: {avg_length:.2f} 字符")
-    else:
-        print("未找到任何Markdown文件。")
+    #     print(f"\n最大长度: {max_length} 字符")
+    #     print(f"最小长度: {min_length} 字符")
+    #     print(f"平均长度: {avg_length:.2f} 字符")
+    # else:
+    #     print("未找到任何Markdown文件。")
+
+
 
 # 使用示例
 root_folder = 'data/flowus_dir/猎人小姐请用深空bot指南！+fc8ce11a-3078-4489-a258-24011ad1701f'  # 替换为你的根文件夹路径
 output_file = 'data/猎人小姐深空bot指南.txt'  # 输出文件名
-extract_markdown_content_and_calculate_length(root_folder, output_file)
+split_file = 'data/猎人小姐深空bot指南_split.txt'  # 分片输出文件名
+extract_markdown_content_and_calculate_length(root_folder, output_file, split_file)

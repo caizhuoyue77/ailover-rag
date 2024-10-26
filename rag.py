@@ -9,14 +9,14 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 # 初始化BGE M3模型
 model = BGEM3FlagModel('../bge-m3', use_fp16=True)
 
-COLLECTION_NAME = "ailover_test_collection_1"
+COLLECTION_NAME = "ailover_test_collection_shenkong_241026_1"
 client = QdrantClient(url="http://localhost:6333")
 
-# 创建集合以存储embedding
-# client.create_collection(
-#     collection_name=COLLECTION_NAME,
-#     vectors_config=VectorParams(size=1024, distance=Distance.DOT),
-# )
+创建集合以存储embedding
+client.create_collection(
+    collection_name=COLLECTION_NAME,
+    vectors_config=VectorParams(size=1024, distance=Distance.DOT),
+)
 
 def read_file(file_path: str) -> list:
     """
