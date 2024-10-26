@@ -34,8 +34,8 @@ curl -X POST "http://btu57v.natappfree.cc/search" -H "Content-Type: application/
 ## 服务器配置
 
 112服务器
-深空：ailover_test_collection_shenkong_241026_4
-光夜：ailover_test_collection_guangye_241026_2
-光夜付费：ailover_test_collection_guangyefufei_241026_1
+shenkong：ailover_test_collection_shenkong_241026_4
+guangye：ailover_test_collection_guangye_241026_2
+guangyefufei：ailover_test_collection_guangyefufei_241026_1
 
 113服务器
