@@ -17,6 +17,8 @@ docker跑qdrant数据库
 
 docker启动qdrant
 ```shell
+docker pull qdrant/qdrant
+
 docker run -p 6333:6333 -p 6334:6334 \
     -v $(pwd)/qdrant_storage:/qdrant/storage:z \
     qdrant/qdrant
@@ -27,3 +29,13 @@ nohup ./natapp [你对应的key] >> api-nohup.out
 
 请求方式（这个natapp的链接可能会变）
 curl -X POST "http://btu57v.natappfree.cc/search" -H "Content-Type: application/json" -d '{"query_text": " 如何切換模型？", "limit": 1}'
+
+
+## 服务器配置
+
+112服务器
+深空：ailover_test_collection_shenkong_241026_4
+光夜：ailover_test_collection_guangye_241026_2
+光夜付费：ailover_test_collection_guangyefufei_241026_1
+
+113服务器
